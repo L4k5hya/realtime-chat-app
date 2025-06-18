@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Chat App</title>
+    <link rel="stylesheet" href="/auth/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h2>Create Account</h2>
+        <form class="auth-form" id="registerForm">
+            <input type="text" id="registerName" placeholder="Username" required>
+            <input type="email" id="registerEmail" placeholder="Email" required>
+            <input type="password" id="registerPassword" placeholder="Password" required>
+            <input type="password" id="registerConfirm" placeholder="Confirm Password" required>
+            <button type="submit">Register</button>
+        </form>
+        <div class="auth-switch">
+            Already have an account? <a href="/auth/login.html">Login</a>
+        </div>
+    </div>
+    <script src="/auth/auth.js" type="module"></script>
+</body>
+</html>

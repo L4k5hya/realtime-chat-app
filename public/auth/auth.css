@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary: #00bcd4;
+  --primary-dark: #0097a7;
+  --danger: #ff5252;
+  --danger-dark: #e53935;
+  --bg-gradient: linear-gradient(135deg, #141e30, #243b55);
+  --input-bg: #313d5a;
+  --input-focus: #3d4f7a;
+  --text-light: #f5f5f5;
+  --text-muted: #b3b3b3;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-light);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+/* Modern Auth Container */
+.auth-container {
+  width: 100%;
+  max-width: 28rem;
+  margin: auto;
+  padding: 2rem 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Form Elements */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.auth-form label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  background: var(--input-bg);
+  border: none;
+  border-radius: 0.75rem;
+  color: var(--text-light);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.auth-form input:focus {
+  outline: none;
+  background: var(--input-focus);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.auth-form button {
+  width: 100%;
+  padding: 0.875rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.auth-form button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* Auth Switch Links */
+.auth-switch {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.auth-switch a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.auth-switch a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Header Styles */
+.chat-header {
+  position: relative;
+  padding: 1rem;
+  background: var(--bg-gradient);
+  color: white;
+  text-align: center;
+  border-radius: 0.75rem 0.75rem 0 0;
+  margin-bottom: 1rem;
+}
+
+.logout-btn {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  padding: 0.5rem 1rem;
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: var(--danger-dark);
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 640px) {
+  .auth-container {
+    padding: 1.75rem 1.25rem;
+    border-radius: 0.75rem;
+  }
+  
+  .auth-form input,
+  .auth-form button {
+    padding: 0.75rem 1rem;
+  }
+  
+  .chat-header {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .logout-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 400px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .auth-container {
+    padding: 1.5rem 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  .auth-form {
+    gap: 1rem;
+  }
+  
+  .auth-form input {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
+  }
+  
+  .auth-form button {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+  
+  .auth-switch {
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark Mode Compatibility */
+body.dark {
+  --input-bg: #1e1e1e;
+  --input-focus: #2d2d2d;
+  --glass-bg: rgba(30, 30, 30, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
