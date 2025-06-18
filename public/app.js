@@ -1,5 +1,5 @@
 // Initialize Socket.IO with authentication
-const socket = io({
+const socket = io("https://chat-app-backend-i6wo.onrender.com", {
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
@@ -40,8 +40,8 @@ function checkAuth() {
     return;
   }
 
-  // Verify token and get user info (you'll need to implement this endpoint)
-  fetch('/auth/me', {
+  // Verify token and get user info from backend
+  fetch('https://chat-app-backend-i6wo.onrender.com/auth/me', {
     headers: {
       'Authorization': `Bearer ${token}`
     }
