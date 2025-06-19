@@ -1,5 +1,5 @@
 {
-  "name": "lesson05",
+  "name": "chatapp",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -18,7 +18,8 @@
     "html-escaper": "^3.0.3",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

@@ -1,43 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
-    <link href="style.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"
-        integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script defer src="app.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Real-time chat application" />
+  <title>Chat App - Secure Messaging</title>
+  <link href="style.css" rel="stylesheet" />
+
+  <!-- Auth Token Redirect Check -->
+  <script>
+    (() => {
+      const token = localStorage.getItem('chatToken');
+      const isAuthPage = location.pathname.includes('/auth/');
+      if (!token && !isAuthPage) {
+        localStorage.removeItem('chatToken');
+        location.href = '/auth/login.html';
+      } else if (token && isAuthPage) {
+        location.href = '/';
+      }
+    })();
+  </script>
+
+  <!-- Socket.IO with integrity -->
+  <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js" 
+    integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w==" 
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer">
+  </script>
+
+  <!-- Force latest JavaScript with ?v= query -->
+  <script type="module" src="auth-service.js?v=4" defer></script>
+  <script type="module" src="app.js?v=4" defer></script>
 </head>
 <body>
-    <header class="chat-header">
-        <h1 class="app-title">Chat App</h1>
-    </header>
+  <header class="chat-header">
+    <h1 class="app-title">Chat App</h1>
+  </header>
 
-    <main class="chat-container">
-        <form class="form-join">
-            <input type="text" id="name" class="name-input" maxlength="20" placeholder="Your name" required disabled>
-            <input type="text" id="room" class="room-input" placeholder="Chat room" required>
-            <button id="join-btn" class="join-button" type="submit">Join Room</button>
-        </form>
+  <main class="chat-container">
+    <form class="form-join">
+      <input type="text" id="name" maxlength="20" placeholder="Your name" required disabled />
+      <input type="text" id="room" placeholder="Room name" required />
+      <button id="join-btn" type="submit">💬 Join Room</button>
+    </form>
 
-        <button id="leave-room" class="leave-button">🚪 Leave Room</button>
+    <button id="leave-room">🚪 Leave Room</button>
 
-        <div class="chat-area">
-            <ul class="chat-display"></ul>
-            
-            <div class="chat-meta">
-                <p class="user-list"></p>
-                <p class="room-list"></p>
-                <p class="activity"></p>
-            </div>
-        </div>
+    <div class="chat-area">
+      <ul class="chat-display"></ul>
+      <p class="user-list"></p>
+      <p class="room-list"></p>
+      <p class="activity"></p>
+    </div>
 
-        <form class="form-msg">
-            <input type="text" id="message" class="message-input" placeholder="Type your message..." required>
-            <button type="submit" class="send-button">Send</button>
-        </form>
-    </main>
+    <form class="form-msg">
+      <input type="text" id="message" placeholder="Type your message..." required />
+      <button type="submit">✉️ Send</button>
+    </form>
+  </main>
 </body>
 </html>

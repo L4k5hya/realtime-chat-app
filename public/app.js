@@ -8,7 +8,7 @@ const socket = io("https://chat-app-backend-i6wo.onrender.com", {
   }
 });
 
-// DOM Elements (cached)
+// DOM Elements
 const elements = {
   msgInput: document.querySelector('#message'),
   nameInput: document.querySelector('#name'),
@@ -20,10 +20,10 @@ const elements = {
   formJoin: document.querySelector('.form-join'),
   leaveBtn: document.querySelector('#leave-room'),
   formMsg: document.querySelector('.form-msg'),
-  header: document.querySelector('header') // Added for logout button
+  header: document.querySelector('header')
 };
 
-// State management
+// App State
 const state = {
   receivedMessages: new Set(),
   lastActivityTime: 0,
@@ -32,7 +32,7 @@ const state = {
   currentUser: null
 };
 
-// Check authentication and load user
+// Check token and get user info
 function checkAuth() {
   const token = localStorage.getItem('chatToken');
   if (!token) {
@@ -40,36 +40,35 @@ function checkAuth() {
     return;
   }
 
-  // Verify token and get user info from backend
   fetch('https://chat-app-backend-i6wo.onrender.com/auth/me', {
     headers: {
       'Authorization': `Bearer ${token}`
     }
   })
-  .then(response => {
-    if (!response.ok) throw new Error('Not authenticated');
-    return response.json();
-  })
-  .then(user => {
-    state.currentUser = user;
-    elements.nameInput.value = user.name; // Auto-fill name from auth
-    elements.nameInput.disabled = true;   // Don't allow changing name
-    setupLogoutButton();
-  })
-  .catch(() => {
-    localStorage.removeItem('chatToken');
-    window.location.href = '/auth/login.html';
-  });
+    .then(res => {
+      if (!res.ok) throw new Error('Invalid token');
+      return res.json();
+    })
+    .then(user => {
+      state.currentUser = user;
+      elements.nameInput.value = user.name;
+      elements.nameInput.disabled = true;
+      setupLogoutButton();
+    })
+    .catch(() => {
+      localStorage.removeItem('chatToken');
+      window.location.href = '/auth/login.html';
+    });
 }
 
-// Proper logout button setup
+// Add logout button
 function setupLogoutButton() {
   const logoutBtn = document.createElement('button');
   logoutBtn.id = 'logout-btn';
   logoutBtn.textContent = 'Logout';
   logoutBtn.addEventListener('click', () => {
     if (state.currentRoom) {
-      socket.emit('leaveRoom', { 
+      socket.emit('leaveRoom', {
         name: state.currentUser.name,
         room: state.currentRoom
       });
@@ -80,64 +79,61 @@ function setupLogoutButton() {
   elements.header.appendChild(logoutBtn);
 }
 
-// Enhanced sanitization
-function sanitize(input, maxLength = 500) {
+// Sanitize text input
+function sanitize(text, limit = 500) {
   const div = document.createElement('div');
-  div.textContent = input.length > maxLength ? input.substring(0, maxLength) : input;
+  div.textContent = text.length > limit ? text.substring(0, limit) : text;
   return div.innerHTML;
 }
 
-// Message display function
+// Display a message
 function displayMessage(data) {
   if (state.receivedMessages.has(data._id)) return;
   state.receivedMessages.add(data._id);
 
   const li = document.createElement('li');
-  const isCurrentUser = data.name === state.currentUser?.name;
+  const isSelf = data.name === state.currentUser?.name;
   const isAdmin = data.name === 'Admin';
 
   if (isAdmin) {
     li.className = 'post post--admin';
     li.innerHTML = `<div class="post__text">${data.text}</div>`;
   } else {
-    li.className = isCurrentUser ? 'post post--left' : 'post post--right';
+    li.className = isSelf ? 'post post--left' : 'post post--right';
     li.innerHTML = `
-      <div class="post__header ${isCurrentUser ? 'post__header--user' : 'post__header--reply'}">
-        <span class="post__header--name">${data.name}</span> 
-        <span class="post__header--time">${data.time}</span> 
+      <div class="post__header ${isSelf ? 'post__header--user' : 'post__header--reply'}">
+        <span class="post__header--name">${sanitize(data.name)}</span>
+        <span class="post__header--time">${sanitize(data.time)}</span>
       </div>
-      <div class="post__text">${data.text}</div>`;
+      <div class="post__text">${sanitize(data.text)}</div>
+    `;
   }
 
   elements.chatDisplay.appendChild(li);
   elements.chatDisplay.scrollTop = elements.chatDisplay.scrollHeight;
 }
 
-// Message sending
+// Send a message
 function sendMessage(e) {
   e.preventDefault();
-  if (!state.currentUser || !state.currentRoom) return;
-  
   const text = elements.msgInput.value.trim();
-  if (!text) return;
+  if (!text || !state.currentUser || !state.currentRoom) return;
 
   socket.emit('message', {
     name: state.currentUser.name,
     text: sanitize(text),
     room: state.currentRoom
   });
-  
-  elements.msgInput.value = "";
+
+  elements.msgInput.value = '';
   elements.msgInput.focus();
 }
 
-// Room management
+// Join a room
 function enterRoom(e) {
   e.preventDefault();
-  if (!state.currentUser) return;
-  
   const room = elements.chatRoom.value.trim();
-  if (!room) return;
+  if (!room || !state.currentUser) return;
 
   state.currentRoom = room;
   state.receivedMessages.clear();
@@ -153,10 +149,11 @@ function enterRoom(e) {
   setTimeout(() => elements.msgInput.focus(), 100);
 }
 
+// Leave a room
 function leaveRoom() {
   if (!state.currentRoom || !state.currentUser) return;
-  
-  socket.emit('leaveRoom', { 
+
+  socket.emit('leaveRoom', {
     name: state.currentUser.name,
     room: state.currentRoom
   });
@@ -164,63 +161,53 @@ function leaveRoom() {
   resetUI();
 }
 
+// Reset UI
 function resetUI() {
   state.currentRoom = null;
   elements.chatRoom.disabled = false;
   elements.chatDisplay.innerHTML = '';
-  elements.usersList.textContent = '';
-  elements.roomList.textContent = '';
+  elements.usersList.innerHTML = '';
+  elements.roomList.innerHTML = '';
   elements.activity.textContent = '';
   elements.leaveBtn.style.display = 'none';
   elements.msgInput.focus();
 }
 
-// Activity tracking
+// Emit typing activity
 function handleActivity() {
-  if (!state.currentUser) return;
-  
   const now = Date.now();
-  if (now - state.lastActivityTime > 1000) {
+  if (now - state.lastActivityTime > 1000 && state.currentUser) {
     socket.emit('activity', state.currentUser.name);
     state.lastActivityTime = now;
   }
 }
 
-// Initialize the app
+// Main init
 function init() {
   checkAuth();
-  
-  // Event Listeners
+
   elements.formMsg.addEventListener('submit', sendMessage);
   elements.formJoin.addEventListener('submit', enterRoom);
   elements.leaveBtn.addEventListener('click', leaveRoom);
   elements.msgInput.addEventListener('input', handleActivity);
 
-  // Socket Listeners
-  socket.on("message", displayMessage);
+  socket.on('message', displayMessage);
 
-  socket.on('messageHistory', (messages) => {
-    const previousMessages = new Set(state.receivedMessages);
-    state.receivedMessages.clear();
+  socket.on('messageHistory', messages => {
     elements.chatDisplay.innerHTML = '';
-
-    messages.forEach(msg => {
-      if (!previousMessages.has(msg._id)) {
-        displayMessage(msg);
-      }
-    });
+    messages.forEach(msg => displayMessage(msg));
   });
 
-  socket.on("activity", (name) => {
+  socket.on('activity', name => {
     clearTimeout(state.activityTimer);
     elements.activity.textContent = `${name} is typing...`;
     state.activityTimer = setTimeout(() => {
-      elements.activity.textContent = "";
+      elements.activity.textContent = '';
     }, 3000);
   });
 
   socket.on('userList', ({ users }) => {
-    elements.usersList.innerHTML = users?.length 
+    elements.usersList.innerHTML = users?.length
       ? `<em>Users in ${sanitize(state.currentRoom)}:</em> ${users.map(u => sanitize(u)).join(', ')}`
       : '';
   });
@@ -231,7 +218,7 @@ function init() {
       : '';
   });
 
-  socket.on('connect_error', (err) => {
+  socket.on('connect_error', err => {
     if (err.message === 'Authentication failed') {
       localStorage.removeItem('chatToken');
       window.location.href = '/auth/login.html';
@@ -251,5 +238,5 @@ function init() {
   });
 }
 
-// Start the application
+// Start
 init();

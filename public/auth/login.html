@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Chat App</title>
-    <link rel="stylesheet" href="/auth/auth.css">
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- Ensure compatibility -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Chat App</title>
+  <link rel="stylesheet" href="/auth/auth.css" />
 </head>
 <body>
-    <div class="auth-container">
-        <h2>Login to Chat</h2>
-        <form class="auth-form" id="loginForm">
-            <input type="email" id="loginEmail" placeholder="Email" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        <div class="auth-switch">
-            Don't have an account? <a href="/auth/register.html">Register</a>
-        </div>
+  <div class="auth-container">
+    <h2>Login to Chat</h2>
+    <form class="auth-form" id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <input type="password" id="loginPassword" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <div class="auth-switch">
+      Don't have an account? <a href="/auth/register.html">Register</a>
     </div>
-    <script src="/auth/auth.js" type="module"></script>
+  </div>
+
+  <!-- Add version query to force browser to load latest JS -->
+  <script src="/auth/auth.js?v=3" type="module"></script>
 </body>
 </html>
