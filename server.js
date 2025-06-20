@@ -1,6 +1,7 @@
 // server.js
 import express from 'express';
 import { Server } from 'socket.io';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { MongoClient, ObjectId } from 'mongodb';
@@ -10,6 +11,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
 const PORT = process.env.PORT || 3500;
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = 'chatApp';
@@ -24,23 +26,25 @@ const allowedOrigins = [
   'http://localhost:5500'
 ];
 
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// ⚙️ CORS workaround – reliably adds appropriate headers
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
-  next();
-});
-
+app.use(cors(corsOptions));             // ✅ CORS middleware
+app.options('*', cors(corsOptions));    // ✅ Preflight support
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -150,13 +154,24 @@ function setupRoutes() {
 
 function setupSocketIO(server) {
   const io = new Server(server, {
-    cors: { origin: allowedOrigins, methods: ['GET', 'POST'], credentials: true }
+    cors: {
+      origin: allowedOrigins,
+      methods: ['GET', 'POST'],
+      credentials: true
+    }
   });
+
   const state = new UserState();
   io.use(authMiddleware.socket);
 
   io.on('connection', socket => {
-    socket.emit('message', { _id: new ObjectId().toString(), name: ADMIN, text: `Welcome ${socket.user.name}!`, room: null, time: new Date().toLocaleTimeString() });
+    socket.emit('message', {
+      _id: new ObjectId().toString(),
+      name: ADMIN,
+      text: `Welcome ${socket.user.name}!`,
+      room: null,
+      time: new Date().toLocaleTimeString()
+    });
 
     socket.on('enterRoom', async ({ room }) => {
       const r = escape(room.trim());
@@ -169,14 +184,27 @@ function setupSocketIO(server) {
         .find({ room: r }).sort({ timestamp: -1 }).limit(100).toArray();
 
       socket.emit('messageHistory', history.reverse().map(m => ({ ...m, _id: m._id.toString() })));
-      socket.to(r).emit('message', { _id: new ObjectId().toString(), name: ADMIN, text: `${socket.user.name} joined`, room: r, time: new Date().toLocaleTimeString() });
+      socket.to(r).emit('message', {
+        _id: new ObjectId().toString(),
+        name: ADMIN,
+        text: `${socket.user.name} joined`,
+        room: r,
+        time: new Date().toLocaleTimeString()
+      });
       updateRooms();
     });
 
     socket.on('message', async ({ text }) => {
       const u = state.get(socket.id);
       if (!u?.room) return;
-      const msg = { _id: new ObjectId(), name: u.name, text: escape(text), room: u.room, time: new Date().toLocaleTimeString(), timestamp: new Date() };
+      const msg = {
+        _id: new ObjectId(),
+        name: u.name,
+        text: escape(text),
+        room: u.room,
+        time: new Date().toLocaleTimeString(),
+        timestamp: new Date()
+      };
       io.to(u.room).emit('message', { ...msg, _id: msg._id.toString() });
       db.collection('messages').insertOne(msg).catch(console.error);
     });
@@ -194,7 +222,13 @@ function setupSocketIO(server) {
 
     function leaveRoom(sock, room) {
       sock.leave(room);
-      sock.to(room).emit('message', { _id: new ObjectId().toString(), name: ADMIN, text: `${sock.user.name} left`, room, time: new Date().toLocaleTimeString() });
+      sock.to(room).emit('message', {
+        _id: new ObjectId().toString(),
+        name: ADMIN,
+        text: `${sock.user.name} left`,
+        room,
+        time: new Date().toLocaleTimeString()
+      });
       updateRooms();
     }
 
@@ -216,4 +250,7 @@ async function startServer() {
   setupSocketIO(server);
 }
 
-startServer().catch(err => { console.error('🔥 Fatal:', err); process.exit(1); });
+startServer().catch(err => {
+  console.error('🔥 Fatal:', err);
+  process.exit(1);
+});
